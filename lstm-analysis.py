@@ -1,7 +1,7 @@
 
 # coding: utf-8
 
-# In[117]:
+# In[138]:
 
 import numpy
 import matplotlib.pyplot as plt
@@ -14,7 +14,7 @@ from sklearn.preprocessing import MinMaxScaler
 from sklearn.metrics import mean_squared_error
 
 
-# In[118]:
+# In[139]:
 
 import pandas
 import matplotlib.pyplot as plt
@@ -29,37 +29,38 @@ dataset1["time_stamps"]=dataset1["time_stamps"].map(lambda i: parse(i))
 #print dataset
 dataset1  = dataset1.set_index(['time_stamps'])
 plt.plot(dataset1.current_price)
+plt.ylabel('Current Price')
+plt.xlabel('Intervals of Datapoints')
 plt.show()
 
 
-# In[119]:
+# In[140]:
 
 # fix random seed for reproducibility
 numpy.random.seed(7)
 
 
-# In[120]:
+# In[141]:
 
 # load the dataset
 dataset1 = pandas.read_csv('edited.csv')
 dataset1.drop(["variation", "Unnamed: 0", "previous_closeprice", "magnitude_change"], axis=1, inplace=True)
 dataset1["time_stamps"]=dataset1["time_stamps"].map(lambda i: str(i))
 dataset1["time_stamps"]=dataset1["time_stamps"].map(lambda i: parse(i))
-#print dataset
 dataset1  = dataset1.set_index(['time_stamps'])
 dataset = dataset1.values
 dataset = dataset.astype('float32')
-print dataset
+#print dataset
 
 
-# In[121]:
+# In[142]:
 
 # normalize the dataset
 scaler = MinMaxScaler(feature_range=(0, 1))
 dataset = scaler.fit_transform(dataset)
 
 
-# In[122]:
+# In[143]:
 
 # split into train and test sets
 train_size = int(len(dataset) * 0.60)
@@ -68,7 +69,7 @@ train, test = dataset[0:train_size,:], dataset[train_size:len(dataset),:]
 print(len(train), len(test))
 
 
-# In[123]:
+# In[144]:
 
 # convert an array of values into a dataset matrix
 def create_dataset(dataset, look_back=1):
@@ -80,7 +81,7 @@ def create_dataset(dataset, look_back=1):
     return numpy.array(dataX), numpy.array(dataY)
 
 
-# In[124]:
+# In[145]:
 
 # reshape into X=t and Y=t+1
 look_back = 1
@@ -88,14 +89,14 @@ trainX, trainY = create_dataset(train, look_back)
 testX, testY = create_dataset(test, look_back)
 
 
-# In[125]:
+# In[146]:
 
 # reshape input to be [samples, time steps, features]
 trainX = numpy.reshape(trainX, (trainX.shape[0], 1, trainX.shape[1]))
 testX = numpy.reshape(testX, (testX.shape[0], 1, testX.shape[1]))
 
 
-# In[126]:
+# In[147]:
 
 # create and fit the LSTM network
 model = Sequential()
@@ -105,7 +106,7 @@ model.compile(loss='mean_squared_error', optimizer='adam')
 model.fit(trainX, trainY, epochs=100, batch_size=1, verbose=2)
 
 
-# In[127]:
+# In[148]:
 
 # make predictions
 trainPredict = model.predict(trainX)
@@ -124,7 +125,7 @@ testScore = math.sqrt(mean_squared_error(testY[0], testPredict[:,0]))
 print('Test Score: %.2f RMSE' % (testScore))
 
 
-# In[134]:
+# In[149]:
 
 # shift train predictions for plotting
 trainPredictPlot = numpy.empty_like(dataset)
@@ -140,6 +141,8 @@ testPredictPlot[len(trainPredict)+(look_back*2)+1:len(dataset)-1, :] = testPredi
 plt.plot(scaler.inverse_transform(dataset), color= "Black")
 plt.plot(trainPredictPlot, color="Red")
 plt.plot(testPredictPlot, color="Blue")
+plt.ylabel('Current Price')
+plt.xlabel('Intervals of Datapoints')
 plt.show()
 
 
